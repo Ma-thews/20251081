@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VS Code — Factorial & Fibonacci</title>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&family=Segoe+UI:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  :root {
+    /* VS Code Dark+ exact colors */
+    --vsc-bg:           #1e1e1e;
+    --vsc-sidebar:      #252526;
+    --vsc-sidebar-hd:   #252526;
+    --vsc-actbar:       #333333;
+    --vsc-tab-bar:      #2d2d2d;
+    --vsc-tab-active:   #1e1e1e;
+    --vsc-tab-inactive: #2d2d2d;
+    --vsc-tab-border:   #252526;
+    --vsc-status:       #007acc;
+    --vsc-status-txt:   #ffffff;
+    --vsc-border:       #3c3c3c;
+    --vsc-highlight:    #264f78;
+    --vsc-gutter:       #1e1e1e;
+    --vsc-gutter-txt:   #858585;
+    --vsc-text:         #d4d4d4;
+    --vsc-line-hover:   #2a2d2e;
+    --vsc-indent:       #404040;
+
+    /* Dark+ syntax tokens */
+    --tok-kw:       #569cd6;   /* blue — def, if, return, for, in */
+    --tok-kw2:      #c586c0;   /* purple — import, from, class */
+    --tok-fn:       #dcdcaa;   /* yellow — function names */
+    --tok-bi:       #4ec9b0;   /* teal — built-ins */
+    --tok-nm:       #b5cea8;   /* green — numbers */
+    --tok-st:       #ce9178;   /* orange-red — strings */
+    --tok-cm:       #6a9955;   /* green — comments */
+    --tok-ds:       #608b4e;   /* dark green — docstrings */
+    --tok-pr:       #9cdcfe;   /* light blue — parameters/vars */
+    --tok-op:       #d4d4d4;   /* default — operators */
+    --tok-tp:       #4ec9b0;   /* teal — types */
+    --tok-dc:       #c586c0;   /* purple — decorators */
+    --tok-ps-kw:    #c586c0;   /* pseudo keywords */
+    --tok-ps-fn:    #dcdcaa;
+    --tok-ps-ret:   #569cd6;
+    --tok-ps-base:  #b5cea8;
+  }
+
+  html, body {
+    height: 100%;
+    background: #000;
+    font-family: 'Fira Code', 'Consolas', monospace;
+  }
+
+  /* ══════════════════════════════════
+     OUTER SHELL
+  ══════════════════════════════════ */
+  .vscode {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 1280px;
+    min-height: 100vh;
+    margin: 0 auto;
+    background: var(--vsc-bg);
+    box-shadow: 0 0 80px rgba(0,0,0,0.9);
+  }
+
+  /* ── TITLE BAR ── */
+  .title-bar {
+    display: flex;
+    align-items: center;
+    height: 30px;
+    background: #3c3c3c;
+    padding: 0 12px;
+    gap: 8px;
+    flex-shrink: 0;
+    user-select: none;
+    -webkit-app-region: drag;
+  }
+  .tb-dots { display:flex; gap:6px; }
+  .tb-dot  { width:12px; height:12px; border-radius:50%; }
+  .tb-dot.r { background:#ff5f57; }
+  .tb-dot.y { background:#febc2e; }
+  .tb-dot.g { background:#28c840; }
+  .tb-title {
+    flex: 1;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #cccccc;
+    letter-spacing: 0.02em;
+  }
+  .tb-right { width: 60px; }
+
+  /* ── MAIN LAYOUT ── */
+  .main-layout {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  /* ── ACTIVITY BAR ── */
+  .activity-bar {
+    width: 48px;
+    background: var(--vsc-actbar);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 0;
+    gap: 6px;
+    border-right: 1px solid #2a2a2a;
+    flex-shrink: 0;
+  }
+  .ab-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.15s;
+    font-size: 18px;
+  }
+  .ab-icon:hover { opacity: 1; }
+  .ab-icon.active { opacity: 1; border-left: 2px solid #007acc; }
+  .ab-icon svg { width:20px; height:20px; fill:#d4d4d4; }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 220px;
+    background: var(--vsc-sidebar);
+    border-right: 1px solid var(--vsc-border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+  .sidebar-header {
+    padding: 10px 20px 6px;
+    font-size: 0.63rem;
+    color: #bbbbbb;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--vsc-border);
+    font-family: 'Fira Code', sans-serif;
+  }
+  .folder {
+    padding: 4px 0;
+  }
+  .folder-name {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    font-size: 0.72rem;
+    color: #cccccc;
+    cursor: pointer;
+    user-select: none;
+  }
+  .folder-name:hover { background: #2a2d2e; }
+  .folder-arrow { font-size: 0.6rem; color: #858585; }
+
+  .file-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px 3px 26px;
+    font-size: 0.72rem;
+    color: #cccccc;
+    cursor: pointer;
+    user-select: none;
+    border-left: 2px solid transparent;
+    transition: background 0.1s;
+  }
+  .file-item:hover { background: #2a2d2e; }
+  .file-item.active {
+    background: #37373d;
+    color: #ffffff;
+    border-left-color: #007acc;
+  }
+  .file-icon { font-size: 13px; flex-shrink: 0; }
+  .fi-py  { color: #3572A5; }
+  .fi-txt { color: #a9b7c6; }
+  .fi-md  { color: #519aba; }
+
+  /* ── EDITOR AREA ── */
+  .editor-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  /* ── TAB BAR ── */
+  .tab-bar {
+    display: flex;
+    background: var(--vsc-tab-bar);
+    border-bottom: 1px solid var(--vsc-border);
+    overflow-x: auto;
+    flex-shrink: 0;
+    scrollbar-width: none;
+  }
+  .tab-bar::-webkit-scrollbar { display: none; }
+
+  .tab {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 12px;
+    height: 35px;
+    font-size: 0.72rem;
+    color: #969696;
+    cursor: pointer;
+    border-right: 1px solid var(--vsc-border);
+    white-space: nowrap;
+    flex-shrink: 0;
+    position: relative;
+    transition: color 0.1s;
+    user-select: none;
+  }
+  .tab:hover { color: #d4d4d4; background: #2a2d2e; }
+  .tab.active {
+    background: var(--vsc-tab-active);
+    color: #ffffff;
+    border-top: 1px solid #007acc;
+    margin-top: -1px;
+  }
+  .tab-close {
+    font-size: 0.65rem;
+    opacity: 0;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 3px;
+  }
+  .tab:hover .tab-close { opacity: 0.6; }
+  .tab.active .tab-close { opacity: 0.6; }
+  .tab-close:hover { opacity: 1 !important; background: rgba(255,255,255,0.1); }
+
+  /* ── BREADCRUMB ── */
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 16px;
+    font-size: 0.68rem;
+    color: #969696;
+    background: var(--vsc-bg);
+    border-bottom: 1px solid var(--vsc-border);
+    flex-shrink: 0;
+  }
+  .bc-sep { color: #555; font-size: 0.6rem; }
+  .bc-cur { color: #d4d4d4; }
+
+  /* ── CODE PANEL ── */
+  .code-panel {
+    display: none;
+    flex: 1;
+    overflow: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #424242 transparent;
+  }
+  .code-panel::-webkit-scrollbar { width: 10px; height: 10px; }
+  .code-panel::-webkit-scrollbar-track { background: transparent; }
+  .code-panel::-webkit-scrollbar-thumb { background: #424242; border-radius: 5px; }
+  .code-panel.active { display: flex; }
+
+  .code-inner {
+    display: flex;
+    min-width: 100%;
+    min-height: 100%;
+  }
+
+  /* ── LINE NUMBERS ── */
+  .line-nums {
+    padding: 14px 0;
+    min-width: 50px;
+    background: var(--vsc-gutter);
+    text-align: right;
+    border-right: 1px solid transparent;
+    user-select: none;
+    flex-shrink: 0;
+    position: sticky;
+    left: 0;
+    z-index: 1;
+  }
+  .ln {
+    display: block;
+    padding-right: 14px;
+    font-size: 0.75rem;
+    line-height: 19px;
+    color: var(--vsc-gutter-txt);
+    cursor: default;
+  }
+  .ln.active-ln { color: #c6c6c6; }
+
+  /* ── CODE LINES ── */
+  .code-lines {
+    padding: 14px 28px 14px 16px;
+    flex: 1;
+    min-width: 0;
+  }
+  .cl {
+    display: block;
+    font-size: 0.78rem;
+    line-height: 19px;
+    white-space: pre;
+    color: var(--vsc-text);
+    cursor: text;
+  }
+  .cl:hover { background: var(--vsc-line-hover); }
+
+  /* ── TOKENS ── */
+  .kw  { color: var(--tok-kw); }
+  .kw2 { color: var(--tok-kw2); }
+  .fn  { color: var(--tok-fn); }
+  .bi  { color: var(--tok-bi); }
+  .nm  { color: var(--tok-nm); }
+  .st  { color: var(--tok-st); }
+  .cm  { color: var(--tok-cm); font-style: italic; }
+  .ds  { color: var(--tok-ds); }
+  .pr  { color: var(--tok-pr); }
+  .tp  { color: var(--tok-tp); }
+  .op  { color: var(--tok-op); }
+  .ps-kw  { color: var(--tok-ps-kw); font-weight: 600; }
+  .ps-fn  { color: var(--tok-ps-fn); }
+  .ps-ret { color: var(--tok-kw); }
+  .ps-base{ color: var(--tok-nm); }
+  .ps-cm  { color: var(--tok-cm); font-style:italic; }
+
+  /* ── MINIMAP ── */
+  .minimap {
+    width: 52px;
+    background: #1e1e1e;
+    border-left: 1px solid #2a2a2a;
+    padding: 14px 4px;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+  .mm { display:block; height:2px; border-radius:1px; margin:1px 0; background:rgba(255,255,255,0.06); }
+  .mm.kw  { background:rgba(86,156,214,0.5); }
+  .mm.fn  { background:rgba(220,220,170,0.4); }
+  .mm.cm  { background:rgba(106,153,85,0.45); }
+  .mm.st  { background:rgba(206,145,120,0.4); }
+  .mm.nm  { background:rgba(181,206,168,0.4); }
+
+  /* ── STATUS BAR ── */
+  .status-bar {
+    height: 22px;
+    background: var(--vsc-status);
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    gap: 14px;
+    flex-shrink: 0;
+  }
+  .sb { display:flex; align-items:center; gap:4px; font-size:0.62rem; color:var(--vsc-status-txt); }
+  .sb svg { width:11px; height:11px; fill:white; }
+  .sb-right { margin-left: auto; display:flex; gap:14px; }
+  .sb-sep { opacity: 0.3; }
+
+  /* PANEL TABS at bottom of screen (optional) */
+  .panel-tab-bar {
+    display: none;
+  }
+</style>
+</head>
+<body>
+
+<div class="vscode">
+
+  <!-- TITLE BAR -->
+  <div class="title-bar">
+    <div class="tb-dots">
+      <div class="tb-dot r"></div>
+      <div class="tb-dot y"></div>
+      <div class="tb-dot g"></div>
+    </div>
+    <div class="tb-title">factorial_fibonacci — Visual Studio Code</div>
+    <div class="tb-right"></div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main-layout">
+
+    <!-- ACTIVITY BAR -->
+    <div class="activity-bar">
+      <div class="ab-icon active" title="Explorer">
+        <svg viewBox="0 0 24 24"><path d="M17.5 0H8.5L7 1.5v5H2L0 8.5v14.07L1.5 24H15.5L17 22.57V18h4.9L23.5 16.5V6zm0 1.5l4 4H17.5zm-2 0v5H21.5v9H17V8.5L12.9 6.5H9V1.5zM2 8.5H7v9L8.5 19H15.5v3.5H1.5z"/></svg>
+      </div>
+      <div class="ab-icon" title="Search">
+        <svg viewBox="0 0 24 24"><path d="M15.25 0a8.25 8.25 0 0 0-6.18 13.72L1 22.14l1.14 1.14 8.08-8.08A8.25 8.25 0 1 0 15.25 0zm0 15a6.75 6.75 0 1 1 0-13.5 6.75 6.75 0 0 1 0 13.5z"/></svg>
+      </div>
+      <div class="ab-icon" title="Source Control">
+        <svg viewBox="0 0 24 24"><path d="M21.007 8.222A3.738 3.738 0 0 0 15.045 5.2a3.737 3.737 0 0 0 1.156 6.583 2.988 2.988 0 0 1-2.668 1.67h-2.99a4.456 4.456 0 0 0-2.989 1.165V7.4a3.737 3.737 0 1 0-1.494 0v9.82a3.737 3.737 0 1 0 1.822.06 2.988 2.988 0 0 1 2.66-1.603h2.99a4.484 4.484 0 0 0 4.085-2.692 3.738 3.738 0 0 0 3.39-4.763zM4.565 3.738a2.244 2.244 0 1 1 4.488 0 2.244 2.244 0 0 1-4.488 0zm4.488 16.523a2.244 2.244 0 1 1-4.488 0 2.244 2.244 0 0 1 4.488 0zm8.194-9.685a2.244 2.244 0 1 1 0-4.488 2.244 2.244 0 0 1 0 4.488z"/></svg>
+      </div>
+      <div class="ab-icon" title="Extensions">
+        <svg viewBox="0 0 24 24"><path d="M14.5 2v2.5H17v2h-2.5V9h-2V6.5H10v-2h2.5V2h2zM4 10h10v10H4V10zm2 2v6h6v-6H6zm12-2h2v2h-2v-2zm0 4h2v2h-2v-2zm0 4h2v2h-2v-2z"/></svg>
+      </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-header">Explorer</div>
+      <div class="folder">
+        <div class="folder-name">
+          <span class="folder-arrow">▾</span>
+          <span>📁 DS1_Assignment</span>
+        </div>
+        <div class="file-item active" onclick="switchTab('factorial-py')">
+          <span class="file-icon fi-py">🐍</span> factorial.py
+        </div>
+        <div class="file-item" onclick="switchTab('fibonacci-py')">
+          <span class="file-icon fi-py">🐍</span> fibonacci.py
+        </div>
+        <div class="file-item" onclick="switchTab('factorial-pseudo')">
+          <span class="file-icon fi-txt">📄</span> factorial.pseudo
+        </div>
+        <div class="file-item" onclick="switchTab('fibonacci-pseudo')">
+          <span class="file-icon fi-txt">📄</span> fibonacci.pseudo
+        </div>
+        <div class="file-item" onclick="switchTab('readme')">
+          <span class="file-icon fi-md">📝</span> README.md
+        </div>
+      </div>
+    </div>
+
+    <!-- EDITOR AREA -->
+    <div class="editor-area">
+
+      <!-- TAB BAR -->
+      <div class="tab-bar" id="tab-bar">
+        <div class="tab active" id="tab-factorial-py" onclick="switchTab('factorial-py')">
+          <span class="fi-py">🐍</span> factorial.py
+          <span class="tab-close">✕</span>
+        </div>
+        <div class="tab" id="tab-fibonacci-py" onclick="switchTab('fibonacci-py')">
+          <span class="fi-py">🐍</span> fibonacci.py
+          <span class="tab-close">✕</span>
+        </div>
+        <div class="tab" id="tab-factorial-pseudo" onclick="switchTab('factorial-pseudo')">
+          <span class="fi-txt">📄</span> factorial.pseudo
+          <span class="tab-close">✕</span>
+        </div>
+        <div class="tab" id="tab-fibonacci-pseudo" onclick="switchTab('fibonacci-pseudo')">
+          <span class="fi-txt">📄</span> fibonacci.pseudo
+          <span class="tab-close">✕</span>
+        </div>
+        <div class="tab" id="tab-readme" onclick="switchTab('readme')">
+          <span class="fi-md">📝</span> README.md
+          <span class="tab-close">✕</span>
+        </div>
+      </div>
+
+      <!-- BREADCRUMB -->
+      <div class="breadcrumb" id="breadcrumb">
+        <span>DS1_Assignment</span>
+        <span class="bc-sep">›</span>
+        <span class="bc-cur" id="bc-file">factorial.py</span>
+      </div>
+
+      <!-- ══════════ PANEL: factorial.py ══════════ -->
+      <div class="code-panel active" id="panel-factorial-py">
+        <div class="code-inner">
+          <div class="line-nums">
+            <span class="ln">1</span><span class="ln">2</span><span class="ln">3</span><span class="ln">4</span><span class="ln">5</span>
+            <span class="ln">6</span><span class="ln">7</span><span class="ln">8</span><span class="ln">9</span><span class="ln">10</span>
+            <span class="ln">11</span><span class="ln">12</span><span class="ln">13</span><span class="ln">14</span><span class="ln">15</span>
+            <span class="ln">16</span><span class="ln">17</span><span class="ln">18</span><span class="ln">19</span><span class="ln">20</span>
+            <span class="ln">21</span><span class="ln">22</span><span class="ln">23</span><span class="ln">24</span><span class="ln">25</span>
+            <span class="ln">26</span><span class="ln">27</span><span class="ln">28</span><span class="ln">29</span>
+          </div>
+          <div class="code-lines">
+<span class="cl"><span class="cm"># ═══════════════════════════════════════════════════════</span></span>
+<span class="cl"><span class="cm">#  factorial.py  —  Recursive Factorial  |  DS1 Assignment</span></span>
+<span class="cl"><span class="cm"># ═══════════════════════════════════════════════════════</span></span>
+<span class="cl"></span>
+<span class="cl"><span class="kw">def </span><span class="fn">factorial</span><span class="op">(</span><span class="pr">n</span><span class="op">: </span><span class="tp">int</span><span class="op">) -> </span><span class="tp">int</span><span class="op">:</span></span>
+<span class="cl">    <span class="ds">"""Return n!  Raises ValueError for negative inputs."""</span></span>
+<span class="cl">    <span class="kw">if</span> <span class="pr">n</span> <span class="op">&lt;</span> <span class="nm">0</span><span class="op">:</span></span>
+<span class="cl">        <span class="kw">raise</span> <span class="bi">ValueError</span><span class="op">(</span><span class="st">"n must be ≥ 0"</span><span class="op">)</span></span>
+<span class="cl">    <span class="kw">if</span> <span class="pr">n</span> <span class="op">==</span> <span class="nm">0</span> <span class="kw">or</span> <span class="pr">n</span> <span class="op">==</span> <span class="nm">1</span><span class="op">:</span>           <span class="cm"># base case</span></span>
+<span class="cl">        <span class="kw">return</span> <span class="nm">1</span></span>
+<span class="cl">    <span class="kw">return</span> <span class="pr">n</span> <span class="op">*</span> <span class="fn">factorial</span><span class="op">(</span><span class="pr">n</span> <span class="op">-</span> <span class="nm">1</span><span class="op">)</span>    <span class="cm"># recursive call</span></span>
+<span class="cl"></span>
+<span class="cl"></span>
+<span class="cl"><span class="kw">def </span><span class="fn">print_table</span><span class="op">(</span><span class="pr">limit</span><span class="op">: </span><span class="tp">int</span><span class="op">):</span></span>
+<span class="cl">    <span class="ds">"""Print a neat table of factorials from 0 to limit."""</span></span>
+<span class="cl">    <span class="bi">print</span><span class="op">(</span><span class="st">f"</span><span class="op">{</span><span class="st">'n'</span><span class="op">:>4} | </span><span class="op">{</span><span class="st">'n!'</span><span class="op">:<20}</span><span class="st">"</span><span class="op">)</span></span>
+<span class="cl">    <span class="bi">print</span><span class="op">(</span><span class="st">"-" * 28</span><span class="op">)</span></span>
+<span class="cl">    <span class="kw">for</span> <span class="pr">i</span> <span class="kw">in</span> <span class="bi">range</span><span class="op">(</span><span class="nm">0</span><span class="op">, </span><span class="pr">limit</span> <span class="op">+</span> <span class="nm">1</span><span class="op">):</span></span>
+<span class="cl">        <span class="bi">print</span><span class="op">(</span><span class="st">f"</span><span class="op">{</span><span class="pr">i</span><span class="op">:>4} | </span><span class="op">{</span><span class="fn">factorial</span><span class="op">(</span><span class="pr">i</span><span class="op">):<20}</span><span class="st">"</span><span class="op">)</span></span>
+<span class="cl"></span>
+<span class="cl"></span>
+<span class="cl"><span class="cm"># ── Main ────────────────────────────────────────────────</span></span>
+<span class="cl"><span class="kw">def </span><span class="fn">main</span><span class="op">():</span></span>
+<span class="cl">    <span class="pr">n</span> <span class="op">=</span> <span class="bi">int</span><span class="op">(</span><span class="bi">input</span><span class="op">(</span><span class="st">"Enter a number: "</span><span class="op">))</span></span>
+<span class="cl">    <span class="bi">print</span><span class="op">(</span><span class="st">f"\n</span><span class="op">{</span><span class="pr">n</span><span class="op">}</span><span class="st">! = </span><span class="op">{</span><span class="fn">factorial</span><span class="op">(</span><span class="pr">n</span><span class="op">)}</span><span class="st">\n"</span><span class="op">)</span></span>
+<span class="cl">    <span class="fn">print_table</span><span class="op">(</span><span class="pr">n</span><span class="op">)</span></span>
+<span class="cl"></span>
+<span class="cl"></span>
+<span class="cl"><span class="kw">if</span> <span class="pr">__name__</span> <span class="op">==</span> <span class="st">"__main__"</span><span class="op">:</span></span>
+<span class="cl">    <span class="fn">main</span><span class="op">()</span></span>
+          </div>
+          <div class="minimap">
+            <span class="mm cm"></span><span class="mm cm"></span><span class="mm cm"></span><span class="mm"></span>
+            <span class="mm kw" style="width:70%"></span><span class="mm st" style="width:85%"></span>
+            <span class="mm kw" style="width:55%"></span><span class="mm kw" style="width:65%"></span>
+            <span class="mm kw" style="width:80%"></span><span class="mm nm" style="width:35%"></span>
+            <span class="mm kw" style="width:75%"></span><span class="mm"></span><span class="mm"></span>
+            <span class="mm fn" style="width:65%"></span><span class="mm st" style="width:80%"></span>
+            <span class="mm" style="width:90%"></span><span class="mm" style="width:60%"></span>
+            <span class="mm kw" style="width:75%"></span><span class="mm" style="width:85%"></span>
+            <span class="mm"></span><span class="mm cm"></span><span class="mm fn" style="width:50%"></span>
+            <span class="mm" style="width:85%"></span><span class="mm" style="width:70%"></span>
+            <span class="mm"></span><span class="mm"></span><span class="mm kw" style="width:60%"></span>
+            <span class="mm fn" style="width:35%"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ PANEL: fibonacci.py ══════════ -->
+      <div class="code-panel" id="panel-fibonacci-py">
+        <div class="code-inner">
+          <div class="line-nums">
+            <span class="ln">1</span><span class="ln">2</span><span class="ln">3</span><span class="ln">4</span><span class="ln">5</span>
+            <span class="ln">6</span><span class="ln">7</span><span class="ln">8</span><span class="ln">9</span><span class="ln">10</span>
+            <span class="ln">11</span><span class="ln">12</span><span class="ln">13</span><span class="ln">14</span><span class="ln">15</span>
+            <span class="ln">16</span><span class="ln">17</span><span class="ln">18</span><span class="ln">19</span><span class="ln">20</span>
+            <span class="ln">21</span><span class="ln">22</span><span class="ln">23</span><span class="ln">24</span><span class="ln">25</span>
+            <span class="ln">26</span><span class="ln">27</span><span class="ln">28</span><span class="ln">29</span><span class="ln">30</span>
+            <span class="ln">31</span><span class="ln">32</span><span class="ln">33</span>
+          </div>
+          <div class="code-lines">
+<span class="cl"><span class="cm"># ═══════════════════════════════════════════════════════</span></span>
+<span class="cl"><span class="cm">#  fibonacci.py  —  Recursive Fibonacci  |  DS1 Assignment</span></span>
+<span class="cl"><span class="cm"># ═══════════════════════════════════════════════════════</span></span>
+<span class="cl"></span>
+<span class="cl"><span class="kw">def </span><span class="fn">fibonacci</span><span class="op">(</span><span class="pr">n</span><span class="op">: </span><span class="tp">int</span><span class="op">) -> </span><span class="tp">int</span><span class="op">:</span></span>
+<span class="cl">    <span class="ds">"""Return the nth Fibonacci number (0-indexed)."""</span></span>
+<span class="cl">    <span class="kw">if</span> <span class="pr">n</span> <span class="op">&lt;</span> <span class="nm">0</span><span class="op">:</span></span>
+<span class="cl">        <span class="kw">raise</span> <span class="bi">ValueError</span><span class="op">(</span><span class="st">"n must be ≥ 0"</span><span class="op">)</span></span>
+<span class="cl">    <span class="kw">if</span> <span class="pr">n</span> <span class="op">==</span> <span class="nm">0</span><span class="op">:</span>                         <span class="cm"># base case 1</span></span>
+<span class="cl">        <span class="kw">return</span> <span class="nm">0</span></span>
+<span class="cl">    <span class="kw">if</span> <span class="pr">n</span> <span class="op">==</span> <span class="nm">1</span><span class="op">:</span>                         <span class="cm"># base case 2</span></span>
+<span class="cl">        <span class="kw">return</span> <span class="nm">1</span></span>
+<span class="cl">    <span class="kw">return</span> <span class="fn">fibonacci</span><span class="op">(</span><span class="pr">n</span> <span class="op">-</span> <span class="nm">1</span><span class="op">)</span> <span class="op">+</span> <span class="fn">fibonacci</span><span class="op">(</span><span class="pr">n</span> <span class="op">-</span> <span class="nm">2</span><span class="op">)</span></span>
+<span class="cl"></span>
+<span class="cl"></span>
+<span class="cl"><span class="kw">def </span><span class="fn">fib_sequence</span><span class="op">(</span><span class="pr">n</span><span class="op">: </span><span class="tp">int</span><span class="op">) -> </span><span class="tp">list</span><span class="op">:</span></span>
+<span class="cl">    <span class="ds">"""Return a list of Fibonacci numbers from fib(0) to fib(n)."""</span></span>
+<span class="cl">    <span class="kw">return</span> <span class="op">[</span><span class="fn">fibonacci</span><span class="op">(</span><span class="pr">i</span><span class="op">)</span> <span class="kw">for</span> <span class="pr">i</span> <span class="kw">in</span> <span class="bi">range</span><span class="op">(</span><span class="pr">n</span> <span class="op">+</span> <span class="nm">1</span><span class="op">)]</span></span>
+<span class="cl"></span>
+<span class="cl"></span>
+<span class="cl"><span class="kw">def </span><span class="fn">print_table</span><span class="op">(</span><span class="pr">n</span><span class="op">: </span><span class="tp">int</span><span class="op">):</span></span>
+<span class="cl">    <span class="ds">"""Print a neat table of Fibonacci values."""</span></span>
+<span class="cl">    <span class="bi">print</span><span class="op">(</span><span class="st">f"</span><span class="op">{</span><span class="st">'i'</span><span class="op">:>4} | </span><span class="op">{</span><span class="st">'fib(i)'</span><span class="op">:<20}</span><span class="st">"</span><span class="op">)</span></span>
+<span class="cl">    <span class="bi">print</span><span class="op">(</span><span class="st">"-" * 28</span><span class="op">)</span></span>
+<span class="cl">    <span class="kw">for</span> <span class="pr">i</span><span class="op">, </span><span class="pr">val</span> <span class="kw">in</span> <span class="bi">enumerate</span><span class="op">(</span><span class="fn">fib_sequence</span><span class="op">(</span><span class="pr">n</span><span class="op">)):</span></span>
+<span class="cl">        <span class="bi">print</span><span class="op">(</span><span class="st">f"</span><span class="op">{</span><span class="pr">i</span><span class="op">:>4} | </span><span class="op">{</span><span class="pr">val</span><span class="op">:<20}</span><span class="st">"</span><span class="op">)</span></span>
+<span class="cl"></span>
+<span class="cl"></span>
+<span class="cl"><span class="cm"># ── Main ────────────────────────────────────────────────</span></span>
+<span class="cl"><span class="kw">def </span><span class="fn">main</span><span class="op">():</span></span>
+<span class="cl">    <span class="pr">n</span> <span class="op">=</span> <span class="bi">int</span><span class="op">(</span><span class="bi">input</span><span class="op">(</span><span class="st">"Enter a number: "</span><span class="op">))</span></span>
+<span class="cl">    <span class="bi">print</span><span class="op">(</span><span class="st">f"\nfib(</span><span class="op">{</span><span class="pr">n</span><span class="op">}</span><span class="st">) = </span><span class="op">{</span><span class="fn">fibonacci</span><span class="op">(</span><span class="pr">n</span><span class="op">)}</span><span class="st">\n"</span><span class="op">)</span></span>
+<span class="cl">    <span class="fn">print_table</span><span class="op">(</span><span class="pr">n</span><span class="op">)</span></span>
+<span class="cl"></span>
+<span class="cl"></span>
+<span class="cl"><span class="kw">if</span> <span class="pr">__name__</span> <span class="op">==</span> <span class="st">"__main__"</span><span class="op">:</span></span>
+<span class="cl">    <span class="fn">main</span><span class="op">()</span></span>
+          </div>
+          <div class="minimap">
+            <span class="mm cm"></span><span class="mm cm"></span><span class="mm cm"></span><span class="mm"></span>
+            <span class="mm fn" style="width:70%"></span><span class="mm st" style="width:85%"></span>
+            <span class="mm kw" style="width:50%"></span><span class="mm kw" style="width:65%"></span>
+            <span class="mm kw" style="width:80%"></span><span class="mm nm" style="width:35%"></span>
+            <span class="mm kw" style="width:65%"></span><span class="mm nm" style="width:35%"></span>
+            <span class="mm kw" style="width:90%"></span><span class="mm"></span><span class="mm"></span>
+            <span class="mm fn" style="width:65%"></span><span class="mm st" style="width:85%"></span>
+            <span class="mm kw" style="width:75%"></span><span class="mm"></span><span class="mm"></span>
+            <span class="mm fn" style="width:60%"></span><span class="mm st" style="width:80%"></span>
+            <span class="mm" style="width:85%"></span><span class="mm" style="width:65%"></span>
+            <span class="mm kw" style="width:80%"></span><span class="mm" style="width:75%"></span>
+            <span class="mm"></span><span class="mm cm"></span><span class="mm fn" style="width:50%"></span>
+            <span class="mm" style="width:85%"></span><span class="mm" style="width:65%"></span>
+            <span class="mm"></span><span class="mm"></span><span class="mm kw" style="width:60%"></span>
+            <span class="mm fn" style="width:35%"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ PANEL: factorial.pseudo ══════════ -->
+      <div class="code-panel" id="panel-factorial-pseudo">
+        <div class="code-inner">
+          <div class="line-nums">
+            <span class="ln">1</span><span class="ln">2</span><span class="ln">3</span><span class="ln">4</span><span class="ln">5</span>
+            <span class="ln">6</span><span class="ln">7</span><span class="ln">8</span><span class="ln">9</span><span class="ln">10</span>
+            <span class="ln">11</span><span class="ln">12</span><span class="ln">13</span><span class="ln">14</span><span class="ln">15</span>
+            <span class="ln">16</span><span class="ln">17</span><span class="ln">18</span><span class="ln">19</span><span class="ln">20</span>
+            <span class="ln">21</span><span class="ln">22</span>
+          </div>
+          <div class="code-lines">
+<span class="cl"><span class="ps-cm">// ══════════════════════════════════════════════════════</span></span>
+<span class="cl"><span class="ps-cm">//  factorial.pseudo  —  Pseudocode  |  DS1 Assignment</span></span>
+<span class="cl"><span class="ps-cm">// ══════════════════════════════════════════════════════</span></span>
+<span class="cl"></span>
+<span class="cl"><span class="ps-kw">FUNCTION </span><span class="ps-fn">factorial</span><span class="op">(</span><span class="pr">n</span><span class="op">):</span></span>
+<span class="cl"></span>
+<span class="cl">    <span class="ps-kw">IF</span> <span class="pr">n</span> <span class="op">&lt;</span> <span class="ps-base">0</span> <span class="ps-kw">THEN</span></span>
+<span class="cl">        <span class="ps-ret">RETURN</span> <span class="st">"Error: negative input"</span></span>
+<span class="cl">    <span class="ps-kw">END IF</span></span>
+<span class="cl"></span>
+<span class="cl">    <span class="ps-kw">IF</span> <span class="pr">n</span> <span class="op">==</span> <span class="ps-base">0</span> <span class="ps-kw">OR</span> <span class="pr">n</span> <span class="op">==</span> <span class="ps-base">1</span> <span class="ps-kw">THEN</span>   <span class="ps-cm">// base case</span></span>
+<span class="cl">        <span class="ps-ret">RETURN</span> <span class="ps-base">1</span></span>
+<span class="cl">    <span class="ps-kw">END IF</span></span>
+<span class="cl"></span>
+<span class="cl">    <span class="ps-ret">RETURN</span> <span class="pr">n</span> <span class="op">×</span> <span class="ps-fn">factorial</span><span class="op">(</span><span class="pr">n</span> <span class="op">−</span> <span class="ps-base">1</span><span class="op">)</span>   <span class="ps-cm">// recursive call</span></span>
+<span class="cl"></span>
+<span class="cl"><span class="ps-kw">END FUNCTION</span></span>
+<span class="cl"></span>
+<span class="cl"><span class="ps-cm">// ── Main ──────────────────────────────────────────────</span></span>
+<span class="cl"><span class="ps-kw">BEGIN</span></span>
+<span class="cl">    <span class="ps-kw">INPUT</span> <span class="pr">n</span></span>
+<span class="cl">    <span class="ps-kw">PRINT</span> <span class="ps-fn">factorial</span><span class="op">(</span><span class="pr">n</span><span class="op">)</span></span>
+<span class="cl"><span class="ps-kw">END</span></span>
+          </div>
+          <div class="minimap">
+            <span class="mm cm"></span><span class="mm cm"></span><span class="mm cm"></span><span class="mm"></span>
+            <span class="mm fn" style="width:60%"></span><span class="mm"></span>
+            <span class="mm kw" style="width:55%"></span><span class="mm st" style="width:75%"></span>
+            <span class="mm kw" style="width:40%"></span><span class="mm"></span>
+            <span class="mm kw" style="width:80%"></span><span class="mm nm" style="width:35%"></span>
+            <span class="mm kw" style="width:40%"></span><span class="mm"></span>
+            <span class="mm kw" style="width:75%"></span><span class="mm"></span>
+            <span class="mm kw" style="width:45%"></span><span class="mm"></span>
+            <span class="mm cm"></span><span class="mm kw" style="width:30%"></span>
+            <span class="mm" style="width:50%"></span><span class="mm fn" style="width:50%"></span>
+            <span class="mm kw" style="width:25%"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ PANEL: fibonacci.pseudo ══════════ -->
+      <div class="code-panel" id="panel-fibonacci-pseudo">
+        <div class="code-inner">
+          <div class="line-nums">
+            <span class="ln">1</span><span class="ln">2</span><span class="ln">3</span><span class="ln">4</span><span class="ln">5</span>
+            <span class="ln">6</span><span class="ln">7</span><span class="ln">8</span><span class="ln">9</span><span class="ln">10</span>
+            <span class="ln">11</span><span class="ln">12</span><span class="ln">13</span><span class="ln">14</span><span class="ln">15</span>
+            <span class="ln">16</span><span class="ln">17</span><span class="ln">18</span><span class="ln">19</span><span class="ln">20</span>
+            <span class="ln">21</span><span class="ln">22</span><span class="ln">23</span><span class="ln">24</span><span class="ln">25</span>
+            <span class="ln">26</span><span class="ln">27</span>
+          </div>
+          <div class="code-lines">
+<span class="cl"><span class="ps-cm">// ══════════════════════════════════════════════════════</span></span>
+<span class="cl"><span class="ps-cm">//  fibonacci.pseudo  —  Pseudocode  |  DS1 Assignment</span></span>
+<span class="cl"><span class="ps-cm">// ══════════════════════════════════════════════════════</span></span>
+<span class="cl"></span>
+<span class="cl"><span class="ps-kw">FUNCTION </span><span class="ps-fn">fibonacci</span><span class="op">(</span><span class="pr">n</span><span class="op">):</span></span>
+<span class="cl"></span>
+<span class="cl">    <span class="ps-kw">IF</span> <span class="pr">n</span> <span class="op">&lt;</span> <span class="ps-base">0</span> <span class="ps-kw">THEN</span></span>
+<span class="cl">        <span class="ps-ret">RETURN</span> <span class="st">"Error: negative input"</span></span>
+<span class="cl">    <span class="ps-kw">END IF</span></span>
+<span class="cl"></span>
+<span class="cl">    <span class="ps-kw">IF</span> <span class="pr">n</span> <span class="op">==</span> <span class="ps-base">0</span> <span class="ps-kw">THEN</span>             <span class="ps-cm">// base case 1</span></span>
+<span class="cl">        <span class="ps-ret">RETURN</span> <span class="ps-base">0</span></span>
+<span class="cl">    <span class="ps-kw">END IF</span></span>
+<span class="cl"></span>
+<span class="cl">    <span class="ps-kw">IF</span> <span class="pr">n</span> <span class="op">==</span> <span class="ps-base">1</span> <span class="ps-kw">THEN</span>             <span class="ps-cm">// base case 2</span></span>
+<span class="cl">        <span class="ps-ret">RETURN</span> <span class="ps-base">1</span></span>
+<span class="cl">    <span class="ps-kw">END IF</span></span>
+<span class="cl"></span>
+<span class="cl">    <span class="ps-ret">RETURN</span> <span class="ps-fn">fibonacci</span><span class="op">(</span><span class="pr">n</span> <span class="op">−</span> <span class="ps-base">1</span><span class="op">)</span> <span class="op">+</span> <span class="ps-fn">fibonacci</span><span class="op">(</span><span class="pr">n</span> <span class="op">−</span> <span class="ps-base">2</span><span class="op">)</span></span>
+<span class="cl"></span>
+<span class="cl"><span class="ps-kw">END FUNCTION</span></span>
+<span class="cl"></span>
+<span class="cl"><span class="ps-cm">// ── Main ──────────────────────────────────────────────</span></span>
+<span class="cl"><span class="ps-kw">BEGIN</span></span>
+<span class="cl">    <span class="ps-kw">INPUT</span> <span class="pr">n</span></span>
+<span class="cl">    <span class="ps-kw">PRINT</span> <span class="ps-fn">fibonacci</span><span class="op">(</span><span class="pr">n</span><span class="op">)</span></span>
+<span class="cl">    <span class="ps-kw">FOR</span> <span class="pr">i</span> <span class="ps-kw">FROM</span> <span class="ps-base">0</span> <span class="ps-kw">TO</span> <span class="pr">n</span><span class="op">:</span></span>
+<span class="cl">        <span class="ps-kw">PRINT</span> <span class="ps-fn">fibonacci</span><span class="op">(</span><span class="pr">i</span><span class="op">)</span></span>
+<span class="cl"><span class="ps-kw">END</span></span>
+          </div>
+          <div class="minimap">
+            <span class="mm cm"></span><span class="mm cm"></span><span class="mm cm"></span><span class="mm"></span>
+            <span class="mm fn" style="width:60%"></span><span class="mm"></span>
+            <span class="mm kw" style="width:55%"></span><span class="mm st" style="width:70%"></span>
+            <span class="mm kw" style="width:40%"></span><span class="mm"></span>
+            <span class="mm kw" style="width:70%"></span><span class="mm nm" style="width:30%"></span>
+            <span class="mm kw" style="width:40%"></span><span class="mm"></span>
+            <span class="mm kw" style="width:70%"></span><span class="mm nm" style="width:30%"></span>
+            <span class="mm kw" style="width:40%"></span><span class="mm"></span>
+            <span class="mm kw" style="width:90%"></span><span class="mm"></span>
+            <span class="mm kw" style="width:45%"></span><span class="mm"></span>
+            <span class="mm cm"></span><span class="mm kw" style="width:30%"></span>
+            <span class="mm" style="width:50%"></span><span class="mm fn" style="width:55%"></span>
+            <span class="mm kw" style="width:70%"></span><span class="mm fn" style="width:55%"></span>
+            <span class="mm kw" style="width:25%"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ PANEL: README.md ══════════ -->
+      <div class="code-panel" id="panel-readme">
+        <div class="code-inner">
+          <div class="line-nums">
+            <span class="ln">1</span><span class="ln">2</span><span class="ln">3</span><span class="ln">4</span><span class="ln">5</span>
+            <span class="ln">6</span><span class="ln">7</span><span class="ln">8</span><span class="ln">9</span><span class="ln">10</span>
+            <span class="ln">11</span><span class="ln">12</span><span class="ln">13</span><span class="ln">14</span><span class="ln">15</span>
+            <span class="ln">16</span><span class="ln">17</span><span class="ln">18</span><span class="ln">19</span><span class="ln">20</span>
+            <span class="ln">21</span><span class="ln">22</span><span class="ln">23</span><span class="ln">24</span>
+          </div>
+          <div class="code-lines">
+<span class="cl"><span class="fn"># DS1 Assignment — Factorial &amp; Fibonacci</span></span>
+<span class="cl"></span>
+<span class="cl"><span class="kw">## Overview</span></span>
+<span class="cl"><span class="op">Python implementations of two classic recursive algorithms.</span></span>
+<span class="cl"></span>
+<span class="cl"><span class="kw">## Files</span></span>
+<span class="cl"><span class="st">| File                  | Description                     |</span></span>
+<span class="cl"><span class="st">|-----------------------|---------------------------------|</span></span>
+<span class="cl"><span class="st">| `factorial.py`        | Recursive factorial function    |</span></span>
+<span class="cl"><span class="st">| `fibonacci.py`        | Recursive fibonacci function    |</span></span>
+<span class="cl"><span class="st">| `factorial.pseudo`    | Pseudocode for factorial        |</span></span>
+<span class="cl"><span class="st">| `fibonacci.pseudo`    | Pseudocode for fibonacci        |</span></span>
+<span class="cl"></span>
+<span class="cl"><span class="kw">## How to Run</span></span>
+<span class="cl"></span>
+<span class="cl"><span class="cm">```bash</span></span>
+<span class="cl"><span class="bi">python factorial.py</span></span>
+<span class="cl"><span class="bi">python fibonacci.py</span></span>
+<span class="cl"><span class="cm">```</span></span>
+<span class="cl"></span>
+<span class="cl"><span class="kw">## Key Concepts</span></span>
+<span class="cl"><span class="op">- **Recursion**: function calls itself with a smaller input</span></span>
+<span class="cl"><span class="op">- **Base Case**: stopping condition to prevent infinite loop</span></span>
+<span class="cl"><span class="op">- **Factorial**: n! = n × (n-1) × ... × 1</span></span>
+<span class="cl"><span class="op">- **Fibonacci**: fib(n) = fib(n-1) + fib(n-2)</span></span>
+          </div>
+          <div class="minimap">
+            <span class="mm fn"></span><span class="mm"></span><span class="mm kw" style="width:50%"></span>
+            <span class="mm" style="width:80%"></span><span class="mm"></span><span class="mm kw" style="width:40%"></span>
+            <span class="mm st"></span><span class="mm st"></span><span class="mm st"></span>
+            <span class="mm st"></span><span class="mm st"></span><span class="mm st"></span>
+            <span class="mm"></span><span class="mm kw" style="width:55%"></span><span class="mm"></span>
+            <span class="mm cm" style="width:40%"></span><span class="mm" style="width:70%"></span>
+            <span class="mm" style="width:70%"></span><span class="mm cm" style="width:40%"></span><span class="mm"></span>
+            <span class="mm kw" style="width:55%"></span><span class="mm" style="width:80%"></span>
+            <span class="mm" style="width:75%"></span><span class="mm" style="width:85%"></span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /editor-area -->
+  </div><!-- /main-layout -->
+
+  <!-- STATUS BAR -->
+  <div class="status-bar">
+    <div class="sb">
+      <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      main
+    </div>
+    <div class="sb">⚠ 0 &nbsp; ✕ 0</div>
+    <div class="sb sb-right">
+      <span id="sb-lang">Python</span>
+      <span class="sb-sep">|</span>
+      <span>UTF-8</span>
+      <span class="sb-sep">|</span>
+      <span>Spaces: 4</span>
+      <span class="sb-sep">|</span>
+      <span id="sb-ln">Ln 1, Col 1</span>
+    </div>
+  </div>
+
+</div><!-- /vscode -->
+
+<script>
+  const panels = {
+    'factorial-py':     { bc: 'factorial.py',     lang: 'Python' },
+    'fibonacci-py':     { bc: 'fibonacci.py',     lang: 'Python' },
+    'factorial-pseudo': { bc: 'factorial.pseudo', lang: 'Pseudocode' },
+    'fibonacci-pseudo': { bc: 'fibonacci.pseudo', lang: 'Pseudocode' },
+    'readme':           { bc: 'README.md',        lang: 'Markdown' },
+  };
+
+  function switchTab(id) {
+    // hide all panels
+    document.querySelectorAll('.code-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.file-item').forEach(f => f.classList.remove('active'));
+
+    // show selected
+    document.getElementById('panel-' + id).classList.add('active');
+    document.getElementById('tab-' + id).classList.add('active');
+
+    // update breadcrumb & status
+    const info = panels[id];
+    document.getElementById('bc-file').textContent = info.bc;
+    document.getElementById('sb-lang').textContent = info.lang;
+
+    // highlight sidebar
+    const items = document.querySelectorAll('.file-item');
+    const names = ['factorial-py','fibonacci-py','factorial-pseudo','fibonacci-pseudo','readme'];
+    const idx = names.indexOf(id);
+    if (idx >= 0) items[idx].classList.add('active');
+  }
+</script>
+</body>
+</html>
